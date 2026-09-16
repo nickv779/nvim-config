@@ -99,7 +99,7 @@ do
   vim.g.maplocalleader = ' '
 
   -- Set to true if you have a Nerd Font installed and selected in the terminal
-  vim.g.have_nerd_font = false
+  vim.g.have_nerd_font = true
 
   -- [[ Setting options ]]
   --  See `:help vim.o`
@@ -390,10 +390,13 @@ do
     },
   }
 
+  vim.pack.add({"https://github.com/nyoom-engineering/oxocarbon.nvim"})
+  require('oxocarbon')  
+
   -- Load the colorscheme here.
   -- Like many other themes, this one has different styles, and you could load
   -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-  vim.cmd.colorscheme 'tokyonight-night'
+  vim.cmd.colorscheme 'oxocarbon'
 
   -- Highlight todo, notes, etc in comments
   vim.pack.add { gh 'folke/todo-comments.nvim' }
@@ -693,7 +696,7 @@ do
   ---@type table<string, vim.lsp.Config>
   local servers = {
     -- clangd = {},
-    -- gopls = {},
+    gopls = {},
     -- pyright = {},
     -- rust_analyzer = {},
     --
@@ -858,7 +861,10 @@ do
       -- <c-k>: Toggle signature help
       --
       -- See `:help blink-cmp-config-keymap` for defining your own keymap
-      preset = 'default',
+      preset = 'enter',
+
+      ['<Tab>'] = { 'select_next', 'fallback' },
+      ['<S-Tab>'] = { 'select_prev', 'fallback' },
 
       -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
       --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
@@ -873,8 +879,17 @@ do
     completion = {
       -- By default, you may press `<c-space>` to show the documentation.
       -- Optionally, set `auto_show = true` to show the documentation after a delay.
-      documentation = { auto_show = false, auto_show_delay_ms = 500 },
+      documentation = { auto_show = true, auto_show_delay_ms = 500 },
+      keyword = { range = 'prefix', },
+      list = {
+        selection = {
+          preselect = false,
+          auto_insert = true,
+        },
+      },
     },
+    -- `completion.list.selection.preselect = false`
+    -- completion.list.selection = { preselect = false, auto_insert = false }
 
     sources = {
       default = { 'lsp', 'path', 'snippets' },
@@ -987,3 +1002,211 @@ end
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+
+-- ============================================================
+-- SECTION 11: EXTRA PLUGINS INSTALLED
+-- Any extra things installed, done at the end here
+-- ============================================================
+
+do
+  vim.pack.add{{ src = "https://github.com/folke/snacks.nvim", version = "main" }}
+  require('snacks').setup({
+    opts = {
+      biffile = { enabled = true },
+    }
+  })
+end
+
+do
+  vim.pack.add { { src = "https://github.com/ray-x/go.nvim", version = 'master' } }
+  vim.pack.add{ { src = "https://github.com/ray-x/guihua.lua", version = "master" } }
+  require('go').setup({
+    lsp_keymaps = false,
+    lsp_cfg = true,
+    verbose = true,
+    log_path = vim.fn.stdpath('cache') .. '/gonvim.log',
+  })
+
+  local format_sync_grp = vim.api.nvim_create_augroup("GoFormat", {})
+  vim.api.nvim_create_autocmd("BufWritePre", {
+    pattern = "*.go",
+    callback = function()
+      require('go.format').goimports()
+    end,
+    group = format_sync_grp,
+  })
+
+  vim.g.netrw_browsex_viewer = 'open'
+
+  require('guihua').setup({
+    maps = {
+      close_view = '<C-x>',
+      send_qf    = '<C-q>',
+      jump_to_list    = '<C-w>k',
+      jump_to_preview = '<C-w>j',
+      prev = '<C-p>',
+      next = '<C-n>',
+      confirm = '<C-o>',
+      split  = '<C-s>',
+      vsplit = '<C-v>',
+    },
+  })
+  vim.ui.select = require('guihua.gui').select
+  vim.ui.input = require('guihua.gui').input
+end
+
+do
+  vim.pack.add({
+    { src = 'https://github.com/nvim-tree/nvim-web-devicons' }, -- optional
+    { src = 'https://github.com/nvim-tree/nvim-tree.lua' },
+  })
+  require('nvim-tree').setup()
+
+  vim.keymap.set({ 'n' }, '<C-n>', '<cmd>NvimTreeOpen<CR>', { desc = "Open tree" })
+  vim.keymap.set({ 'n' }, '<C-S-n>', '<cmd>NvimTreeClose<CR>', { desc = "Open tree" })
+end
+
+do
+  vim.pack.add({ { src = 'https://github.com/nvimdev/dashboard-nvim' } } )
+  require('dashboard').setup({
+    theme = 'hyper',
+    shortcut_type = 'letter',
+    config = {
+      header = {
+        '',
+    '                     ..\'         ',
+    '                 ,xNMM.           ',
+    '               .OMMMMo            ',
+    '               lMM"               ',
+    '     .;loddo:.  .olloddol;.       ',
+    '   cKMMMMMMMMMMNWMMMMMMMMMM0:     ',
+    ' .KMMMMMMMMMMMMMMMMMMMMMMMWd.     ',
+    ' XMMMMMMMMMMMMMMMMMMMMMMMX.       ',
+    ';MMMMMMMMMMMMMMMMMMMMMMMM:        ',
+    ':MMMMMMMMMMMMMMMMMMMMMMMM:        ',
+    '.MMMMMMMMMMMMMMMMMMMMMMMMX.       ',
+    ' kMMMMMMMMMMMMMMMMMMMMMMMMWd.     ',
+    ' \'XMMMMMMMMMMMMMMMMMMMMMMMMMMk   ',
+    '  \'XMMMMMMMMMMMMMMMMMMMMMMMMK.   ',
+    '    kMMMMMMMMMMMMMMMMMMMMMMd      ',
+    '     ;KMMMMMMMWXXWMMMMMMMk.       ',
+    '       "cooc*"    "*coo\'"        ',
+        '',
+      },
+      date_format = '%Y-%m-%d %H:%M:%S',
+      directories = {
+        '~/Projects/cloud-billing/',
+        '~/Projects/cloud-metering/',
+        '~/Projects/cloud-ui/',
+      },
+      shortcut = {
+        {
+          icon = ' ',
+          icon_hl = '@variable',
+          desc = 'Files',
+          group = 'Label',
+          action = 'Telescope find_files',
+          key = 'f',
+        },
+        {
+          desc = ' Apps',
+          group = 'DiagnosticHint',
+          action = 'Telescope app',
+          key = 'a',
+        },
+        {
+          desc = ' dotfiles',
+          group = 'Number',
+          action = 'Telescope dotfiles',
+          key = 'd',
+        },
+      },
+      -- center = { -- config for doom style
+      --   {
+      --     icon = ' ',
+      --     icon_hl = 'Title',
+      --     desc = 'Find File',
+      --     key = 'b',
+      --     keymap = 'SPC f f',
+      --     key_hl = 'Number',
+      --     key_format = ' %s', -- remove default surrounding `[]`
+      --     action = 'lua print(2)'
+      --   },
+      --   {
+      --     icon = ' ',
+      --     desc = 'Find Dotfiles',
+      --     key = 'f',
+      --     keymap = 'SPC f d',
+      --     key_format = ' %s', -- remove default surrounding `[]`
+      --     action = 'lua print(3)'
+      --   },
+      -- },
+      footer = {}  --your footer
+    }
+  })
+  vim.api.nvim_set_hl(0, 'DashboardHeader', { fg = '#c1f4c4' })
+  -- vim.api.nvim_set_hl(0, 'DashboardHeader2', { fg = '#ffeb3b' })
+  -- vim.api.nvim_set_hl(0, 'DashboardHeader3', { fg = '#f44336' })
+  -- vim.api.nvim_set_hl(0, 'DashboardHeader4', { fg = '#f48fb1' })
+  -- vim.api.nvim_set_hl(0, 'DashboardHeader5', { fg = '#2196f3' })
+end
+
+do
+  vim.pack.add({
+    {
+      src = "https://github.com/nickjvandyke/opencode.nvim",
+      version = vim.version.range("*"), -- Latest stable release
+    },
+  })
+
+  local ocv_cmd = "bash -c 'exec -a opencode ocv --port'"
+
+  ---@type opencode.Opts
+  vim.g.opencode_opts = {
+    server = {
+      start = function()
+        require("opencode.terminal").open(ocv_cmd)
+      end,
+      toggle = function()
+        require("opencode.terminal").toggle(ocv_cmd)
+      end,
+    },
+  }
+
+  -- Recommended/example keymaps
+  vim.keymap.set({ "n", "x" }, "<C-a>", function() require("opencode").ask("@this: ") end, { desc = "Ask OpenCode…" })
+  vim.keymap.set({ "n", "x" }, "<C-x>", function() require("opencode").select() end, { desc = "Select OpenCode…" })
+  vim.keymap.set({ "n", "x" }, "go", function() return require("opencode").operator("@this ") end, { desc = "Append range to OpenCode", expr = true })
+  vim.keymap.set({ "n" }, "goo", function() return require("opencode").operator("@this ") .. "_" end, { desc = "Append line to OpenCode", expr = true })
+  vim.keymap.set({ "n" }, "<S-C-u>", function() require("opencode").command("session.half.page.up") end,   { desc = "Scroll OpenCode up" })
+  vim.keymap.set({ "n" }, "<S-C-d>", function() require("opencode").command("session.half.page.down") end, { desc = "Scroll OpenCode down" })
+end
+
+do
+  vim.pack.add( { {
+    src = "https://github.com/romgrk/barbar.nvim",
+    version = "master"
+  } } )
+  require('barbar').setup({
+    animation = true,
+    auto_hide = false,
+    tabpages = true,
+    hide = { extensions = false, inactive = false },
+  })
+
+  vim.keymap.set('n', '<leader><Tab>', '<cmd>BufferNext<CR>', { desc = 'Next buffer' })
+  vim.keymap.set('n', '<leader><S-Tab>', '<cmd>BufferPrev<CR>', { desc = 'Previous buffer' })
+  vim.keymap.set('n', '<leader>x', '<cmd>BufferClose<CR>', { desc = 'Close buffer' })
+end
+
+do
+  vim.pack.add({{
+    src = "https://github.com/tpope/vim-dadbod",
+    version = "master"
+  }})
+
+  vim.pack.add({{
+    src = "https://github.com/kristijanhusak/vim-dadbod-ui",
+    version = "master"
+  }})
+end
